@@ -54,10 +54,14 @@ class HAClient:
             if state_data and state_data.get("state") not in ["unknown", "unavailable"]:
                 try:
                     val = float(state_data["state"])
+                    print(f"DEBUG: Sensor {sensor} value: {val}")
                     total += val
                     count += 1
                 except ValueError:
+                    print(f"DEBUG: Sensor {sensor} has non-numeric state: {state_data['state']}")
                     pass
+            else:
+                 print(f"DEBUG: Sensor {sensor} state unavailable or None: {state_data}")
                     
         if count == 0:
             return None
