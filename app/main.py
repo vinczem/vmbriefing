@@ -25,6 +25,9 @@ def generate_briefing():
     print("Starting briefing generation...")
     
     config = load_config()
+    print(f"DEBUG: Loaded config keys: {list(config.keys())}")
+    print(f"DEBUG: Selected Provider: {config.get('ai_provider')}")
+    print(f"DEBUG: Gemini Key Present? {bool(config.get('gemini_api_key'))}")
     
     # 1. RSS News
     rss = RSSFetcher(config.get("rss_feeds", []), config.get("news_hours", 24))
