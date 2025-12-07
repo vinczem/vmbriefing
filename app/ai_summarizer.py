@@ -40,7 +40,10 @@ class AISummarizer:
 
         try:
             if self.provider == "openai":
-                response = openai.ChatCompletion.create(
+                from openai import OpenAI
+                client = OpenAI(api_key=self.api_key)
+                
+                response = client.chat.completions.create(
                     model=self.model,
                     messages=[
                         {"role": "system", "content": "You are a helpful news assistant."},
