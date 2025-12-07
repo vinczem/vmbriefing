@@ -6,8 +6,19 @@ from flask import Flask
 from rss_fetcher import RSSFetcher
 from weather_fetcher import WeatherFetcher
 from ai_summarizer import AISummarizer
+from ha_client import HAClient
 
-# ... (imports)
+app = Flask(__name__)
+latest_briefing = "Waiting for first update..."
+last_updated = "Never"
+
+def load_config():
+    try:
+        with open("/data/options.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print("Warning: /data/options.json not found, returning empty config")
+        return {}
 
 def generate_briefing():
     global latest_briefing, last_updated
