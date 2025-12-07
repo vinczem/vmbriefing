@@ -50,9 +50,17 @@ class AISummarizer:
                 return response.choices[0].message.content.strip()
                 
             elif self.provider == "gemini":
-                model = genai.GenerativeModel(self.model)
-                response = model.generate_content(prompt)
-                return response.text.strip()
+                try:
+                    model = genai.GenerativeModel(self.model)
+                    response = model.generate_content(prompt)
+                    return response.text.strip()
+                except Exception as e:
+                    print(f"Error calling Gemini: {e}")
+                    print("DEBUG: Listing available models...")
+                    for m in genai.list_models():
+                        if 'generateContent' in m.supported_generation_methods:
+                            print(f" - {m.name}")
+                    return None
                 
             else:
                 print(f"Unknown AI provider: {self.provider}")
