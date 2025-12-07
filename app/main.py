@@ -31,22 +31,39 @@ def generate_briefing():
     news_items = rss.fetch_news()
     
     news_text = ""
-    openai_key = config.get("openai_api_key")
+    news_text = ""
+    ai_provider = config.get("ai_provider", "openai")
     
-    if openai_key:
-        print("Using AI Summarizer...")
-        ai = AISummarizer(openai_key, config.get("openai_model", "gpt-3.5-turbo"))
-        summary = ai.summarize(news_items)
+    # Check for credentials based on provider
+    api_key = None
+    model = None
+    
+    if ai_provider == "openai":
+        api_key = config.get("openai_api_key")
+        model = config.get("openai_model", "gpt-3.5-turbo")
+    elif ai_provider == "gemini":
+        api_key = config.get("gemini_api_key")
+        model = config.get("gemini_model", "gemini-1.5-flash")
+    
+    if api_key:
+        print(f"Using AI Summarizer ({ai_provider})...")
+        import datetime
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        
+        ai = AISummarizer(ai_provider, api_key, model)
+        summary = ai.summarize(news_items, current_date=today)
         if summary:
             news_text = f"AI Híradó:\n{summary}"
         else:
             news_text = "Hiba történt az AI összefoglaló generálásakor. (Lásd logok)"
     else:
+        print(f"No API key found for provider {ai_provider}. Fallback to list.")
+        # Fallback to simple list
         # Fallback to simple list
         if news_items:
             news_text = "Legfontosabb hírek:\n"
             for item in news_items:
-                news_text += f"- {item['title']} ({item['source']})\n"
+                news_text += f"- {item['title']}\n"
         else:
             news_text = "Nincsenek friss hírek.\n"
 

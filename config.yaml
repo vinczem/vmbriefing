@@ -1,5 +1,5 @@
 name: "VMBriefing"
-version: "0.1.11"
+version: "0.1.12"
 slug: "vmbriefing"
 description: "Daily briefing generator for Home Assistant"
 url: "https://github.com/vinczem/vmbriefing"
@@ -16,8 +16,11 @@ homeassistant_api: true
 options:
   rss_feeds: []
   news_hours: 24
+  ai_provider: "openai"
   openai_api_key: ""
   openai_model: "gpt-3.5-turbo"
+  gemini_api_key: ""
+  gemini_model: "gemini-1.5-flash"
   weather_api_key: ""
   weather_lat: 0.0
   weather_lon: 0.0
@@ -27,8 +30,11 @@ schema:
   rss_feeds:
     - str
   news_hours: int
+  ai_provider: list(openai, gemini)
   openai_api_key: str
   openai_model: str
+  gemini_api_key: str
+  gemini_model: str
   weather_api_key: str
   weather_lat: float
   weather_lon: float
