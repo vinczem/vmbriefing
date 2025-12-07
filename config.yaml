@@ -1,5 +1,5 @@
 name: "VMBriefing"
-version: "0.1.5"
+version: "0.1.6"
 slug: "vmbriefing"
 description: "Daily briefing generator for Home Assistant"
 url: "https://github.com/vinczem/vmbriefing"

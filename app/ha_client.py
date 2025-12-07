@@ -36,6 +36,7 @@ class HAClient:
                 data["attributes"] = attributes
                 
             response = requests.post(url, headers=self.headers, json=data)
+            print(f"HA API Response: {response.status_code} - {response.text}")
             response.raise_for_status()
             print(f"Successfully updated {entity_id}")
         except Exception as e:
