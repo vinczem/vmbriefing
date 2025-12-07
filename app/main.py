@@ -97,11 +97,12 @@ def index():
     <pre>{latest_briefing}</pre>
     """
 
-if __name__ == "__main__":
-    # Start scheduler in background
-    t = threading.Thread(target=scheduler_loop, daemon=True)
+# Start scheduler in background when imported (Gunicorn)
+# Ensure it only runs once if multiple imports happen (basic check)
+if not any(t.name == "BriefingScheduler" for t in threading.enumerate()):
+    t = threading.Thread(target=scheduler_loop, daemon=True, name="BriefingScheduler")
     t.start()
-    
-    # Start Web UI
-    # app.run(host="0.0.0.0", port=5000)
-    pass
+
+if __name__ == "__main__":
+    # Start Web UI (Dev mode only)
+    app.run(host="0.0.0.0", port=5000)
