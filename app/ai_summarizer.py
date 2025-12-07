@@ -29,12 +29,12 @@ class AISummarizer:
         
         prompt = (
             f"Te egy intelligens hírszerkesztő vagy. {date_prompt}\n"
-            "A feladatod, hogy az alábbi hírlistából válaszd ki a 5-10 legfontosabb "
+            "A feladatod, hogy az alábbi hírlistából válaszd ki a naximum 5 legfontosabb "
             "hírt, és foglald össze őket egy rövid, olvasmányos napi tájékoztató formájában magyarul.\n"
             "FONTOS: A válaszodat feltétlenül ezzel kezdd: 'Ma [Dátum] van, [Névnap] névnapja.' "
             "(A dátumot és a névnapot te töltsd ki a mai nap alapján!)\n"
             "A stílus legyen tárgyilagos, de barátságos. "
-            "Ne csak felsorolj, hanem kerek mondatokban fogalmazz.\n\n"
+            "Ne csak felsorolj, és ne sorszámozz, hanem kerek mondatokban fogalmazz!.\n"
             f"Hírek:\n{news_list}"
         )
 
