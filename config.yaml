@@ -1,5 +1,5 @@
 name: "VMBriefing"
-version: "0.1.9"
+version: "0.1.10"
 slug: "vmbriefing"
 description: "Daily briefing generator for Home Assistant"
 url: "https://github.com/vinczem/vmbriefing"
@@ -12,6 +12,7 @@ arch:
 startup: application
 boot: auto
 init: false
+homeassistant_api: true
 options:
   rss_feeds: []
   news_hours: 24
