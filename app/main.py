@@ -74,7 +74,10 @@ def generate_briefing():
     last_updated = time.ctime()
     
     # Update HA Entity
-    ha.update_state("sensor.vmbriefing_text", briefing, {"last_updated": last_updated})
+    ha.update_state("sensor.vmbriefing_text", "OK", {
+        "briefing_text": briefing,
+        "last_updated": last_updated
+    })
     print("Briefing generated and updated.")
 
 def scheduler_loop():
