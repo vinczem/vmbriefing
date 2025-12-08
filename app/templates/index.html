@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VM Briefing - Napi Tájékoztató</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Meta Refresh (Optional: Auto-reload every 15 minutes) -->
+    <meta http-equiv="refresh" content="900">
+</head>
+<body>
+    <div class="container">
+        <header class="masthead">
+            <h1>VM Briefing</h1>
+            <div class="masthead-meta">
+                <span>{{ current_date }}</span>
+                <span>&bull;</span>
+                <span class="weather-badge">{{ weather_summary | default("Időjárás betöltése...") }}</span>
+                <span>&bull;</span>
+                <span>{{ avg_temp_text | default("Hőmérséklet betöltése...") }}</span>
+            </div>
+        </header>
+
+        {% if not news_items and not ai_summary %}
+            <div style="text-align: center; padding: 50px;">
+                <h2>A rendszer éppen frissít...</h2>
+                <p>Kérlek várj, amíg az adatok betöltődnek. (Last Updated: {{ last_updated }})</p>
+            </div>
+        {% else %}
+            <div class="main-grid">
+                <!-- Lead Story (AI Summary) -->
+                <section class="lead-story">
+                    <h2>Napi Összefoglaló</h2>
+                    <div class="summary-content">
+                        {{ ai_summary | safe }}
+                    </div>
+                </section>
+
+                <!-- Rest of the news (or secondary layout if I had one) -->
+            </div>
+
+            <div class="news-section-title">Friss Hírek</div>
+            <div class="news-grid">
+                {% for item in news_items %}
+                <article class="news-card">
+                    <div class="news-source">{{ item.source }}</div>
+                    <h3><a href="{{ item.link }}" target="_blank">{{ item.title }}</a></h3>
+                    <div class="news-summary">{{ item.summary | striptags | truncate(150) }}</div>
+                    <div class="news-meta">{{ item.published.strftime('%H:%M') }}</div>
+                </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <footer>
+            <p>VM Briefing System &bull; Utolsó frissítés: {{ last_updated }}</p>
+        </footer>
+    </div>
+</body>
+</html>

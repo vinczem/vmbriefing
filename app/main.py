@@ -2,7 +2,7 @@ import json
 import time
 import threading
 import os
-from flask import Flask
+from flask import Flask, render_template
 from rss_fetcher import RSSFetcher
 from weather_fetcher import WeatherFetcher
 from ai_summarizer import AISummarizer
@@ -11,6 +11,14 @@ from ha_client import HAClient
 app = Flask(__name__)
 latest_briefing = "Waiting for first update..."
 last_updated = "Never"
+data_store = {
+    "news_items": [],
+    "ai_summary": None,
+    "weather_summary": "Betöltés...",
+    "avg_temp_text": "",
+    "current_date": "",
+    "last_updated": "Never"
+}
 
 def load_config():
     try:
@@ -56,7 +64,7 @@ def generate_briefing():
         ai = AISummarizer(ai_provider, api_key, model)
         summary = ai.summarize(news_items, current_date=today)
         if summary:
-            news_text = f"AI Híradó:\n{summary}"
+            news_text = f"A legfontosabb hírek:\n{summary}"
         else:
             news_text = "Hiba történt az AI összefoglaló generálásakor. (Lásd logok)"
     else:
@@ -87,11 +95,23 @@ def generate_briefing():
     else:
         temp_text = "A lakás hőmérséklete nem elérhető."
 
-    # Combine
+    # Combine (Keep for legacy/debugging)
     briefing = f"{weather_text}\n{temp_text}\n\n{news_text}"
     
     latest_briefing = briefing
     last_updated = time.ctime()
+    
+    # Update Data Store for Template
+    import datetime
+    global data_store
+    data_store = {
+        "news_items": news_items,
+        "ai_summary": summary if 'summary' in locals() and summary else news_text, # Fallback to list text if no summary object
+        "weather_summary": weather_text,
+        "avg_temp_text": temp_text,
+        "current_date": datetime.date.today().strftime("%Y. %m. %d."),
+        "last_updated": last_updated
+    }
     
     # Update HA Entity
     ha.update_state("sensor.vmbriefing_text", "OK", {
@@ -113,12 +133,7 @@ def scheduler_loop():
 
 @app.route("/")
 def index():
-    return f"""
-    <h1>VMBriefing Status</h1>
-    <p><strong>Last Updated:</strong> {last_updated}</p>
-    <hr>
-    <pre>{latest_briefing}</pre>
-    """
+    return render_template("index.html", **data_store)
 
 # Start scheduler in background when imported (Gunicorn)
 # Ensure it only runs once if multiple imports happen (basic check)
