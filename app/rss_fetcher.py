@@ -2,6 +2,7 @@ import feedparser
 import time
 from datetime import datetime, timedelta
 import email.utils
+import logging
 
 class RSSFetcher:
     def __init__(self, feeds, hours):
@@ -29,6 +30,6 @@ class RSSFetcher:
                                 'published': published_dt
                             })
             except Exception as e:
-                print(f"Error fetching feed {feed_url}: {e}")
+                logging.error(f"Error fetching feed {feed_url}: {e}")
                 
         return news_items

@@ -1,6 +1,7 @@
 import openai
 import google.generativeai as genai
 import os
+import logging
 
 class AISummarizer:
     def __init__(self, provider, api_key, model):
@@ -58,17 +59,13 @@ class AISummarizer:
                     response = model.generate_content(prompt)
                     return response.text.strip()
                 except Exception as e:
-                    print(f"Error calling Gemini: {e}")
-                    print("DEBUG: Listing available models...")
-                    for m in genai.list_models():
-                        if 'generateContent' in m.supported_generation_methods:
-                            print(f" - {m.name}")
+                    logging.error(f"Error calling Gemini: {e}")
                     return None
                 
             else:
-                print(f"Unknown AI provider: {self.provider}")
+                logging.error(f"Unknown AI provider: {self.provider}")
                 return None
                 
         except Exception as e:
-            print(f"Error calling AI provider ({self.provider}): {e}")
+            logging.error(f"Error calling AI provider ({self.provider}): {e}")
             return None

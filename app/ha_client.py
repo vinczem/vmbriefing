@@ -1,5 +1,6 @@
 import os
 import requests
+import logging
 
 class HAClient:
     def __init__(self):
@@ -12,7 +13,7 @@ class HAClient:
 
     def get_state(self, entity_id):
         if not self.supervisor_token:
-            print("Warning: SUPERVISOR_TOKEN not found. Cannot fetch entity state.")
+            logging.warning("Warning: SUPERVISOR_TOKEN not found. Cannot fetch entity state.")
             return None
             
         try:
@@ -21,12 +22,12 @@ class HAClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            print(f"Error fetching state for {entity_id}: {e}")
+            logging.error(f"Error fetching state for {entity_id}: {e}")
             return None
 
     def update_state(self, entity_id, state, attributes=None):
         if not self.supervisor_token:
-            print("Warning: SUPERVISOR_TOKEN not found. Cannot update entity state.")
+            logging.warning("Warning: SUPERVISOR_TOKEN not found. Cannot update entity state.")
             return
             
         try:
@@ -36,11 +37,11 @@ class HAClient:
                 data["attributes"] = attributes
                 
             response = requests.post(url, headers=self.headers, json=data)
-            print(f"HA API Response: {response.status_code} - {response.text}")
+            logging.info(f"HA API Response: {response.status_code} - {response.text}")
             response.raise_for_status()
-            print(f"Successfully updated {entity_id}")
+            logging.info(f"Successfully updated {entity_id}")
         except Exception as e:
-            print(f"Error updating state for {entity_id}: {e}")
+            logging.error(f"Error updating state for {entity_id}: {e}")
 
     def get_avg_temperature(self, sensor_ids):
         if not sensor_ids:
@@ -54,14 +55,14 @@ class HAClient:
             if state_data and state_data.get("state") not in ["unknown", "unavailable"]:
                 try:
                     val = float(state_data["state"])
-                    print(f"DEBUG: Sensor {sensor} value: {val}")
+                    logging.debug(f"DEBUG: Sensor {sensor} value: {val}")
                     total += val
                     count += 1
                 except ValueError:
-                    print(f"DEBUG: Sensor {sensor} has non-numeric state: {state_data['state']}")
+                    logging.debug(f"DEBUG: Sensor {sensor} has non-numeric state: {state_data['state']}")
                     pass
             else:
-                 print(f"DEBUG: Sensor {sensor} state unavailable or None: {state_data}")
+                 logging.debug(f"DEBUG: Sensor {sensor} state unavailable or None: {state_data}")
                     
         if count == 0:
             return None

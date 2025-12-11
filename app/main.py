@@ -2,11 +2,51 @@ import json
 import time
 import threading
 import os
+import logging
 from flask import Flask, render_template
 from rss_fetcher import RSSFetcher
 from weather_fetcher import WeatherFetcher
 from ai_summarizer import AISummarizer
 from ha_client import HAClient
+
+# Logging Configuration
+class CustomFormatter(logging.Formatter):
+    """
+    Custom logging formatter to add colors to log levels.
+    """
+    grey = "\x1b[38;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    
+    # Format: Timestamp - Level - Message
+    # We use %(asctime)s for timestamp
+    format_str = "%(asctime)s - %(levelname)s - %(message)s"
+
+    FORMATS = {
+        logging.DEBUG: grey + format_str + reset,
+        logging.INFO: grey + format_str + reset,
+        logging.WARNING: yellow + format_str + reset,
+        logging.ERROR: red + format_str + reset,
+        logging.CRITICAL: bold_red + format_str + reset
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt, datefmt='%Y-%m-%d %H:%M:%S')
+        return formatter.format(record)
+
+# Setup root logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Avoid duplicate handlers if reloaded
+if not logger.handlers:
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    ch.setFormatter(CustomFormatter())
+    logger.addHandler(ch)
 
 app = Flask(__name__)
 latest_briefing = "Waiting for first update..."
@@ -25,17 +65,17 @@ def load_config():
         with open("/data/options.json", "r") as f:
             return json.load(f)
     except FileNotFoundError:
-        print("Warning: /data/options.json not found, returning empty config")
+        logging.warning("/data/options.json not found, returning empty config")
         return {}
 
 def generate_briefing():
     global latest_briefing, last_updated
-    print("Starting briefing generation...")
+    logging.info("Starting briefing generation...")
     
     config = load_config()
-    print(f"DEBUG: Loaded config keys: {list(config.keys())}")
-    print(f"DEBUG: Selected Provider: {config.get('ai_provider')}")
-    print(f"DEBUG: Gemini Key Present? {bool(config.get('gemini_api_key'))}")
+    logging.info(f"DEBUG: Loaded config keys: {list(config.keys())}")
+    logging.info(f"DEBUG: Selected Provider: {config.get('ai_provider')}")
+    logging.info(f"DEBUG: Gemini Key Present? {bool(config.get('gemini_api_key'))}")
     
     # 1. RSS News
     rss = RSSFetcher(config.get("rss_feeds", []), config.get("news_hours", 24))
@@ -57,7 +97,7 @@ def generate_briefing():
         model = config.get("gemini_model", "gemini-1.5-flash")
     
     if api_key:
-        print(f"Using AI Summarizer ({ai_provider})...")
+        logging.info(f"Using AI Summarizer ({ai_provider})...")
         import datetime
         today = datetime.date.today().strftime("%Y-%m-%d")
         
@@ -79,13 +119,13 @@ def generate_briefing():
             part_of_day = "este"
             
         for attempt in range(max_retries):
-            print(f"Generating AI summary (attempt {attempt + 1}/{max_retries})...")
+            logging.info(f"Generating AI summary (attempt {attempt + 1}/{max_retries})...")
             summary = ai.summarize(news_items, current_date=today, part_of_day=part_of_day)
             if summary:
                 break
             
             if attempt < max_retries - 1:
-                print(f"AI generation failed. Retrying in {retry_delay}s...")
+                logging.warning(f"AI generation failed. Retrying in {retry_delay}s...")
                 time.sleep(retry_delay)
         
         if summary:
@@ -93,7 +133,7 @@ def generate_briefing():
         else:
             news_text = "Hiba történt az AI összefoglaló generálásakor. (Lásd logok)"
     else:
-        print(f"No API key found for provider {ai_provider}. Fallback to list.")
+        logging.warning(f"No API key found for provider {ai_provider}. Fallback to list.")
         # Fallback to simple list
         if news_items:
             news_text = "Legfontosabb hírek:\n"
@@ -142,14 +182,14 @@ def generate_briefing():
         "briefing_text": briefing,
         "last_updated": last_updated
     })
-    print("Briefing generated and updated.")
+    logging.info("Briefing generated and updated.")
 
 def scheduler_loop():
     while True:
         try:
             generate_briefing()
         except Exception as e:
-            print(f"Error in generation loop: {e}")
+            logging.error(f"Error in generation loop: {e}")
             
         config = load_config()
         interval = config.get("update_interval", 60) * 60
