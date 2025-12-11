@@ -9,6 +9,18 @@ from weather_fetcher import WeatherFetcher
 from ai_summarizer import AISummarizer
 from ha_client import HAClient
 
+# -- Custom Logging Level: SUCCESS (25) --
+SUCCESS_LEVEL_NUM = 25
+logging.addLevelName(SUCCESS_LEVEL_NUM, "SUCCESS")
+
+def success(self, message, *args, **kws):
+    if self.isEnabledFor(SUCCESS_LEVEL_NUM):
+        self._log(SUCCESS_LEVEL_NUM, message, args, **kws)
+
+logging.Logger.success = success
+logging.success = lambda msg, *args, **kwargs: logging.log(SUCCESS_LEVEL_NUM, msg, *args, **kwargs)
+logging.SUCCESS = SUCCESS_LEVEL_NUM
+
 # Logging Configuration
 class CustomFormatter(logging.Formatter):
     """
