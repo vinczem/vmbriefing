@@ -62,14 +62,38 @@ def generate_briefing():
         today = datetime.date.today().strftime("%Y-%m-%d")
         
         ai = AISummarizer(ai_provider, api_key, model)
-        summary = ai.summarize(news_items, current_date=today)
+        
+        # Retry logic for AI summarization
+        summary = None
+        max_retries = 3
+        retry_delay = 10
+        
+        # Determine part of day for greeting
+        current_hour = datetime.datetime.now().hour
+        part_of_day = "napközben"
+        if 5 <= current_hour < 10:
+            part_of_day = "reggel"
+        elif 10 <= current_hour < 18:
+            part_of_day = "napközben"
+        elif current_hour >= 18 or current_hour < 5:
+            part_of_day = "este"
+            
+        for attempt in range(max_retries):
+            print(f"Generating AI summary (attempt {attempt + 1}/{max_retries})...")
+            summary = ai.summarize(news_items, current_date=today, part_of_day=part_of_day)
+            if summary:
+                break
+            
+            if attempt < max_retries - 1:
+                print(f"AI generation failed. Retrying in {retry_delay}s...")
+                time.sleep(retry_delay)
+        
         if summary:
             news_text = f"A legfontosabb hírek:\n{summary}"
         else:
             news_text = "Hiba történt az AI összefoglaló generálásakor. (Lásd logok)"
     else:
         print(f"No API key found for provider {ai_provider}. Fallback to list.")
-        # Fallback to simple list
         # Fallback to simple list
         if news_items:
             news_text = "Legfontosabb hírek:\n"

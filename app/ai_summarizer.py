@@ -13,7 +13,7 @@ class AISummarizer:
         elif self.provider == "gemini" and self.api_key:
             genai.configure(api_key=self.api_key)
 
-    def summarize(self, news_items, current_date=None):
+    def summarize(self, news_items, current_date=None, part_of_day="napközben"):
         if not self.api_key:
             return None
 
@@ -28,11 +28,11 @@ class AISummarizer:
         date_prompt = f"Ma {current_date} van." if current_date else ""
         
         prompt = (
-            f"Te egy intelligens hírszerkesztő vagy. {date_prompt}\n"
+            f"Te egy intelligens hírszerkesztő vagy. {date_prompt} Most éppen '{part_of_day}' van.\n"
             "A feladatod, hogy az alábbi hírlistából válaszd ki a naximum 5 legfontosabb "
             "hírt, és foglald össze őket egy rövid, olvasmányos napi tájékoztató formájában magyarul.\n"
-            "FONTOS: A válaszodat feltétlenül ezzel kezdd: 'Ma [Dátum] van, [Névnap] névnapja.' "
-            "(A dátumot és a névnapot te töltsd ki a mai nap alapján!)\n"
+            f"FONTOS: A válaszodat az napszaknak megfelelő köszönéssel kezdd (pl. '{part_of_day}' esetén: Jó reggelt/Jó napot/Jó estét), majd mondd a pontos dátumot és a mai névnapot!\n"
+            "Példa: 'Jó reggelt! Ma 2024. május 1. van, Jakab névnapja.'\n"
             "A stílus legyen tárgyilagos, de barátságos. "
             "Ne csak felsorolj, és ne sorszámozz, hanem kerek mondatokban fogalmazz!.\n"
             f"Hírek:\n{news_list}"
