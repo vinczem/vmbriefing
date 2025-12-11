@@ -39,7 +39,7 @@ class HAClient:
             response = requests.post(url, headers=self.headers, json=data)
             logging.info(f"HA API Response: {response.status_code} - {response.text}")
             response.raise_for_status()
-            logging.info(f"Successfully updated {entity_id}")
+            logging.success(f"Successfully updated {entity_id}")
         except Exception as e:
             logging.error(f"Error updating state for {entity_id}: {e}")
 
@@ -55,14 +55,14 @@ class HAClient:
             if state_data and state_data.get("state") not in ["unknown", "unavailable"]:
                 try:
                     val = float(state_data["state"])
-                    logging.debug(f"DEBUG: Sensor {sensor} value: {val}")
+                    logging.debug(f"Sensor {sensor} value: {val}")
                     total += val
                     count += 1
                 except ValueError:
-                    logging.debug(f"DEBUG: Sensor {sensor} has non-numeric state: {state_data['state']}")
+                    logging.debug(f"Sensor {sensor} has non-numeric state: {state_data['state']}")
                     pass
             else:
-                 logging.debug(f"DEBUG: Sensor {sensor} state unavailable or None: {state_data}")
+                 logging.debug(f"Sensor {sensor} state unavailable or None: {state_data}")
                     
         if count == 0:
             return None

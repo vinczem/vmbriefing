@@ -18,6 +18,7 @@ class CustomFormatter(logging.Formatter):
     yellow = "\x1b[33;20m"
     red = "\x1b[31;20m"
     bold_red = "\x1b[31;1m"
+    green = "\x1b[32;20m"
     reset = "\x1b[0m"
     
     # Format: Timestamp - Level - Message
@@ -27,6 +28,7 @@ class CustomFormatter(logging.Formatter):
     FORMATS = {
         logging.DEBUG: grey + format_str + reset,
         logging.INFO: grey + format_str + reset,
+        logging.SUCCESS: green + format_str + reset,
         logging.WARNING: yellow + format_str + reset,
         logging.ERROR: red + format_str + reset,
         logging.CRITICAL: bold_red + format_str + reset
@@ -73,9 +75,9 @@ def generate_briefing():
     logging.info("Starting briefing generation...")
     
     config = load_config()
-    logging.info(f"DEBUG: Loaded config keys: {list(config.keys())}")
-    logging.info(f"DEBUG: Selected Provider: {config.get('ai_provider')}")
-    logging.info(f"DEBUG: Gemini Key Present? {bool(config.get('gemini_api_key'))}")
+    logging.info(f"Loaded config keys: {list(config.keys())}")
+    logging.info(f"Selected Provider: {config.get('ai_provider')}")
+    logging.info(f"Gemini Key Present? {bool(config.get('gemini_api_key'))}")
     
     # 1. RSS News
     rss = RSSFetcher(config.get("rss_feeds", []), config.get("news_hours", 24))
@@ -182,7 +184,7 @@ def generate_briefing():
         "briefing_text": briefing,
         "last_updated": last_updated
     })
-    logging.info("Briefing generated and updated.")
+    logging.success("Briefing generated and updated.")
 
 def scheduler_loop():
     while True:
@@ -206,5 +208,4 @@ if not any(t.name == "BriefingScheduler" for t in threading.enumerate()):
     t.start()
 
 if __name__ == "__main__":
-    # Start Web UI (Dev mode only)
     app.run(host="0.0.0.0", port=5000)
