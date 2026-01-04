@@ -11,6 +11,27 @@
     --font-sans: 'Inter', sans-serif;
     --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.05);
     --shadow-hover: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+    /* Toggle Button Colors */
+    --toggle-bg: #e0e0e0;
+    --toggle-icon: #333333;
+}
+
+[data-theme="dark"] {
+    --primary-color: #e0e0e0;
+    --accent-color: #e74c3c;
+    /* Brighter red for dark mode */
+    --bg-color: #121212;
+    --paper-color: #1e1e1e;
+    --text-color: #e0e0e0;
+    --muted-text: #a0a0a0;
+    --border-color: #333333;
+    --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 10px 15px rgba(0, 0, 0, 0.5);
+
+    --toggle-bg: #333333;
+    --toggle-icon: #f1c40f;
+    /* Yellow for moon/sun */
 }
 
 * {
@@ -202,4 +223,33 @@ footer {
 @media (min-width: 1024px) {
     /* Newspaper layout: Lead on left/center, sidebar? Or just top down. 
         Let's keep lead story full width for impact, then grid below. */
+}
+/* Theme Toggle Button */
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--toggle-bg);
+    color: var(--toggle-icon);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+/* Smooth transitions for theme switching */
+body, .news-card, .lead-story, .masthead, .masthead-meta, .news-section-title {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
