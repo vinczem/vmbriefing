@@ -143,12 +143,23 @@ def generate_briefing():
                 time.sleep(retry_delay)
         
         if summary:
-            news_text = f"A legfontosabb hírek:\n{summary}"
+            # Try to split greeting and body
+            lines = summary.split('\n', 1)
+            if len(lines) >= 2:
+                greeting = lines[0].strip()
+                news_body = lines[1].strip()
+            else:
+                greeting = f"Jó {part_of_day}!" # Fallback greeting
+                news_body = summary
+
+            news_text = f"A legfontosabb hírek:\n{news_body}"
         else:
+            greeting = ""
             news_text = "Hiba történt az AI összefoglaló generálásakor. (Lásd logok)"
     else:
         logging.warning(f"No API key found for provider {ai_provider}. Fallback to list.")
         # Fallback to simple list
+        greeting = ""
         if news_items:
             news_text = "Legfontosabb hírek:\n"
             for item in news_items:
@@ -173,8 +184,22 @@ def generate_briefing():
     else:
         temp_text = "A lakás hőmérséklete nem elérhető."
 
-    # Combine (Keep for legacy/debugging)
-    briefing = f"{weather_text}\n{temp_text}\n\n{news_text}"
+    # Combine
+    # Order: Greeting -> Weather -> Home Temp -> News Header + News Body
+    briefing_parts = []
+    if greeting:
+        briefing_parts.append(greeting)
+    
+    if weather_text:
+        briefing_parts.append(weather_text)
+        
+    if temp_text:
+        briefing_parts.append(temp_text)
+        
+    briefing_parts.append("") # Empty line separator
+    briefing_parts.append(news_text)
+    
+    briefing = "\n".join(briefing_parts)
     
     latest_briefing = briefing
     last_updated = time.ctime()

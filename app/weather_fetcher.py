@@ -12,31 +12,69 @@ class WeatherFetcher:
             return "Weather API key not configured."
 
         try:
-            # Using One Call API 3.0 (or 2.5 depending on key type, usually 2.5/weather or onecall)
-            # Note: One Call API requires subscription (even free tier). 
-            # Fallback to standard 'weather' or 'forecast' if One Call fails or is not desired?
-            # Let's use the standard 'weather' endpoint for current and 'forecast' for daily to be safer for free keys without credit card?
-            # Actually, the user asked for "daily weather forecast".
-            # Let's try the standard 5 day / 3 hour forecast API which is free for everyone.
+            import datetime
             
+            # 1. Fetch Forecast (5 day / 3 hour)
             url = f"https://api.openweathermap.org/data/2.5/forecast?lat={self.lat}&lon={self.lon}&appid={self.api_key}&units=metric&lang=hu"
             response = requests.get(url)
             response.raise_for_status()
             data = response.json()
             
-            # Simple summary: Get today's max/min or just the next few entries?
-            # The 5 day forecast returns data every 3 hours.
-            # Let's just grab the description and temp for the next entry (close to now) and maybe a daily summary if possible.
-            # Since this is a simple briefing, let's just take the first entry (current/upcoming) and maybe one 12 hours later.
+            # --- Current Weather (First item in list serves as proxy for "now" or use separate 'weather' endpoint if needed, 
+            # but 'forecast' list[0] is usually close enough for a general briefing - usually within 1.5 hours) ---
+            current = data['list'][0]
+            curr_desc = current['weather'][0]['description']
+            curr_temp = current['main']['temp']
             
-            # Better approach for "Daily forecast":
-            # Just get the current weather and a brief description.
+            text = f"Időjárás: Jelenleg {curr_desc}, {curr_temp:.1f}°C."
+
+            # --- Future Forecast Logic ---
+            now = datetime.datetime.now()
+            target_hour = 14 # Default: Afternoon
+            target_label = "délután"
             
-            current_weather = data['list'][0]
-            desc = current_weather['weather'][0]['description']
-            temp = current_weather['main']['temp']
+            # Logic:
+            # - Morning (00-09): Target 14:00 (Today Afternoon)
+            # - Day (10-17): Target 20:00 (Today Evening)
+            # - Evening (18-23): Target 08:00 (Tomorrow Morning)
             
-            return f"Időjárás: {desc}, {temp:.1f}°C."
+            if 0 <= now.hour < 10:
+                target_hour = 14
+                target_label = "délután"
+                target_date = now.date()
+            elif 10 <= now.hour < 18:
+                target_hour = 20
+                target_label = "este"
+                target_date = now.date()
+            else: # 18 <= now.hour <= 23
+                target_hour = 8
+                target_label = "holnap reggel"
+                target_date = now.date() + datetime.timedelta(days=1)
+                
+            # Find the forecast item closest to target_date + target_hour
+            best_item = None
+            min_diff = float('inf')
+            
+            for item in data['list']:
+                # item['dt'] is unix timestamp
+                item_dt = datetime.datetime.fromtimestamp(item['dt'])
+                
+                # We only care if it matches the target date (approx) and is in the future relative to now?
+                # actually just searching for the specific timestamp closest to our target
+                target_dt = datetime.datetime.combine(target_date, datetime.time(target_hour, 0))
+                
+                diff = abs((item_dt - target_dt).total_seconds())
+                
+                if diff < min_diff:
+                    min_diff = diff
+                    best_item = item
+            
+            if best_item:
+                fut_desc = best_item['weather'][0]['description']
+                fut_temp = best_item['main']['temp']
+                text += f" Várhatóan {target_label}: {fut_desc}, {fut_temp:.1f}°C."
+            
+            return text
             
         except Exception as e:
             return f"Error fetching weather: {e}"
