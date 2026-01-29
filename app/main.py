@@ -125,11 +125,11 @@ def generate_briefing():
         # Determine part of day for greeting
         current_hour = datetime.datetime.now().hour
         part_of_day = "napközben"
-        if 5 <= current_hour < 10:
+        if 2 <= current_hour < 10:
             part_of_day = "reggel"
         elif 10 <= current_hour < 18:
             part_of_day = "napközben"
-        elif current_hour >= 18 or current_hour < 5:
+        elif current_hour >= 18 or current_hour < 2:
             part_of_day = "este"
             
         for attempt in range(max_retries):
